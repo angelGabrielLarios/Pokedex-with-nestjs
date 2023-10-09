@@ -16,10 +16,17 @@ async function bootstrap() {
       /* estas dos configuraciones es para enviar peticiones post lada data se valide que sea la requerida y ademas que no envie data de menos */
       whitelist: true,
       forbidNonWhitelisted: true,
+      transform: true,
+      transformOptions: {
+        enableImplicitConversion: true
+      }
     })
   );
 
-  await app.listen(3000);
+  /* convetir nuestra data de los dto, osea parsear los tipos*/
+
+  await app.listen(process.env.PORT);
+  console.log(`App running on port ${process.env.PORT}`)
 }
 bootstrap();
 

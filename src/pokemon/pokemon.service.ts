@@ -6,14 +6,22 @@ import { Pokemon } from './entities/pokemon.entity';
 
 /* inyeccion de dependecia con mongo */
 import { InjectModel } from '@nestjs/mongoose';
+import { PaginationDto } from 'src/common/dto/pagination.dto';
+import { ConfigService } from '@nestjs/config';
 
 @Injectable()
 export class PokemonService {
 
+  private defaultLimit: number
   constructor(
     @InjectModel(Pokemon.name)
-    private readonly pokemonModel: Model<Pokemon>
-  ) { }
+    private readonly pokemonModel: Model<Pokemon>,
+    private readonly configService: ConfigService
+  ) {
+
+    this.defaultLimit = configService.get<number>(`defaultLimit`)
+
+  }
 
   async create(createPokemonDto: CreatePokemonDto) {
 
@@ -36,9 +44,15 @@ export class PokemonService {
     */
   }
 
-  findAll() {
-
-    return `This action returns all pokemon`;
+  async findAll(paginationDto: PaginationDto) {
+    const { limit = this.defaultLimit, offset = 0 } = paginationDto
+    return this.pokemonModel.find()
+      .limit(limit)
+      .skip(offset)
+      .sort({
+        no: 1
+      })
+      .select('-__v')
   }
 
   async findOne(term: string) {
@@ -87,30 +101,10 @@ export class PokemonService {
       this.handleExeptions(error)
     }
 
-    /* resolber el problema */
-
-
 
   }
 
   async remove(id: string) {
-
-    /* sencillo la manera eliminar pirermoa segurarnos de que exista */
-
-    /* evitar dos consulta a la base de datos */
-
-    /* const pokemon = await this.findOne(id) */
-
-    /* const result = this.pokemonModel.findByIdAndDelete(id)
-    return result */
-    /* asi lo elmino en el video  */
-    /* await pokemon.deleteOne() */
-
-
-    //this.pokemonModel.findByIdAndDelete(id)
-
-    /* los piepes tranforman la data */
-
 
     const { deletedCount } = await this.pokemonModel.deleteOne({ _id: id })
 
@@ -129,3 +123,6 @@ export class PokemonService {
     throw new InternalServerErrorException(`Can't update Pokemon - Check server logs`)
   }
 }
+
+
+/* los modulos encapsulan el codigo   */
